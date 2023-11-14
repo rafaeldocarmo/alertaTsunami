@@ -6,14 +6,14 @@ from boat import Boat
 from doll import Doll
 
 screen_width = 1024
-screen_height = 1024
+screen_height = 900
 bg_tela_inicial = './bg-telafundo.jpg'
 background_image_filename = './bg-mar.jpeg'
 mask_background = './bg-mar-overlay.png'
 
 pygame.init()
 
-screen = pygame.display.set_mode((1024, 1024), 0, 32)
+screen = pygame.display.set_mode((1024, 900), 0, 32)
 initial_background = pygame.image.load(bg_tela_inicial).convert()
 
 collision_mask = pygame.image.load(mask_background).convert()
@@ -34,7 +34,7 @@ image_filenames_level3 = ['./doll1.png', './doll2.png', './doll3.png', './doll4.
 positions_level3 = [(20, 20), (900, 1000), (90, 300), (50, 900), (900, 50), (500, 50), (200, 650), (600, 800), (900, 500), (700, 300)]
 dolls_level3 = [Doll(image_filename, position) for image_filename, position in zip(image_filenames_level3, positions_level3)]
 
-current_level = 3
+current_level = 1
 
 if current_level == 1:
     dolls = dolls_level1
@@ -47,7 +47,9 @@ clock = pygame.time.Clock()
 
 TIMEREVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(TIMEREVENT, 1000) 
-game_time = 60 
+
+game_time = 5  
+original_game_time = game_time
 
 button_width = 200
 button_height = 50
@@ -55,6 +57,7 @@ play_button_rect = pygame.Rect((screen_width - button_width) // 2, screen_height
 exit_button_rect = pygame.Rect((screen_width - button_width) // 2, screen_height // 2 + 20, button_width, button_height)
 
 show_initial_screen = True
+game_over = False
 
 while show_initial_screen:
     for event in pygame.event.get():
@@ -92,11 +95,11 @@ while True:
         if event.type == QUIT:
             pygame.quit()
             exit()
-        elif event.type == TIMEREVENT:
+        elif event.type == TIMEREVENT and not show_initial_screen and not game_over:
             game_time -= 1 
             if game_time <= 0: 
                 show_initial_screen = True 
-                game_time = 60
+                game_over = True
 
     keys = pygame.key.get_pressed()
     boat.move(keys, clock.get_time() / 1000.0)
@@ -113,8 +116,8 @@ while True:
             game_time += 0
 
     dolls_left = sum(not doll.saved for doll in dolls)
-    dolls_text = font.render('Dolls left: ' + str(dolls_left), True, (255, 255, 255))
-    screen.blit(dolls_text, (10, 50))
+    dolls_text = font.render('Resgatar: ' + str(dolls_left), True, (255, 255, 255))
+    screen.blit(dolls_text, (10, 50)) 
 
     font = pygame.font.Font(None, 36)
     time_text = font.render('Time: ' + str(game_time), True, (255, 255, 255))
@@ -136,3 +139,38 @@ while True:
 
     pygame.display.update()
     clock.tick(60)
+
+    if game_over:
+            while game_over:
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        exit()
+                    elif event.type == MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = event.pos
+
+                        if play_button_rect.collidepoint(mouse_x, mouse_y):
+                            game_over = False
+                            show_initial_screen = True
+                            game_time = original_game_time
+
+                        elif exit_button_rect.collidepoint(mouse_x, mouse_y):
+                            pygame.quit()
+                            exit()
+
+                screen.fill((255, 255, 255))
+
+                font = pygame.font.Font(None, 72)
+                game_over_text = font.render('Game Over', True, (255, 0, 0))
+                game_over_rect = game_over_text.get_rect(center=(screen_width // 2, screen_height // 4))
+                screen.blit(game_over_text, game_over_rect)
+
+                restart_text = font.render('Restart', True, (0, 0, 0))
+                restart_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2))
+                screen.blit(restart_text, restart_rect)
+
+                exit_text = font.render('Exit', True, (0, 0, 0))
+                exit_rect = exit_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
+                screen.blit(exit_text, exit_rect)
+
+                pygame.display.update()

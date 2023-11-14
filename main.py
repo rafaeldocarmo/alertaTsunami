@@ -21,18 +21,33 @@ background = pygame.image.load(background_image_filename).convert()
 
 boat = Boat('./boat.png', (410, 410), 100, collision_mask)
 
-image_filenames = ['./doll1.png', './doll2.png', './doll3.png', './doll4.png', './doll5.png', './doll6.png']
-positions = [(20, 20), (900, 1000), (90, 300), (50, 900), (900, 50), (500, 600)]
-dolls = [Doll(image_filename, position) for image_filename, position in zip(image_filenames, positions)]
+# Nível 1
+image_filenames_level1 = ['./doll1.png', './doll2.png', './doll3.png', './doll4.png']
+positions_level1 = [(500, 50), (200, 650), (90, 300), (900, 500)]
+dolls_level1 = [Doll(image_filename, position) for image_filename, position in zip(image_filenames_level1, positions_level1)]
+
+image_filenames_level2 = ['./doll1.png', './doll2.png', './doll3.png', './doll4.png', './doll5.png', './doll6.png']
+positions_level2 = [(20, 20), (900, 1000), (90, 300), (50, 900), (900, 50), (500, 600)]
+dolls_level2 = [Doll(image_filename, position) for image_filename, position in zip(image_filenames_level2, positions_level2)]
+
+image_filenames_level3 = ['./doll1.png', './doll2.png', './doll3.png', './doll4.png', './doll5.png', './doll6.png', './doll7.png', './doll8.png', './doll9.png', './doll10.png']
+positions_level3 = [(20, 20), (900, 1000), (90, 300), (50, 900), (900, 50), (500, 50), (200, 650), (600, 800), (900, 500), (700, 300)]
+dolls_level3 = [Doll(image_filename, position) for image_filename, position in zip(image_filenames_level3, positions_level3)]
+
+current_level = 3
+
+if current_level == 1:
+    dolls = dolls_level1
+elif current_level == 2:
+    dolls = dolls_level2
+elif current_level == 3:
+    dolls = dolls_level3
 
 clock = pygame.time.Clock()
 
-# Adicione estas linhas para configurar o temporizador
 TIMEREVENT = pygame.USEREVENT + 1
-pygame.time.set_timer(TIMEREVENT, 1000)  # Configura um evento para ocorrer a cada 1000 milissegundos (1 segundo)
-
-# Inicialize o tempo do jogo
-game_time = 60  # Defina o tempo do jogo aqui
+pygame.time.set_timer(TIMEREVENT, 1000) 
+game_time = 60 
 
 button_width = 200
 button_height = 50
@@ -95,17 +110,29 @@ while True:
     for doll in dolls:
         doll.draw(screen)
         if doll.check_collision(boat):
-            game_time += 10  # Adicione tempo extra ao relógio quando um boneco é salvo
+            game_time += 0
 
-    # Adicione estas linhas para exibir o número de bonecos que ainda precisam ser salvos
     dolls_left = sum(not doll.saved for doll in dolls)
     dolls_text = font.render('Dolls left: ' + str(dolls_left), True, (255, 255, 255))
-    screen.blit(dolls_text, (10, 50))  # Ajuste a posição do texto conforme necessário
+    screen.blit(dolls_text, (10, 50))
 
-    # Adicione estas linhas para exibir o tempo na tela
     font = pygame.font.Font(None, 36)
     time_text = font.render('Time: ' + str(game_time), True, (255, 255, 255))
-    screen.blit(time_text, (10, 10))  # Ajuste a posição do texto conforme necessário
+    screen.blit(time_text, (10, 10))
+    
+    level_text = font.render('Level: ' + str(current_level), True, (255, 255, 255))
+    screen.blit(level_text, (10, 90))
+
+    if dolls_left == 0:
+        current_level += 1
+        game_time = 60
+
+        if current_level == 1:
+            dolls = dolls_level1
+        elif current_level == 2:
+            dolls = dolls_level2
+        elif current_level == 3:
+            dolls = dolls_level3
 
     pygame.display.update()
     clock.tick(60)

@@ -35,9 +35,12 @@ class Boat:
         # Verifica os quatro cantos do barco
         for dx in [0, self.image.get_width()]:
             for dy in [0, self.image.get_height()]:
-                if self.mask.get_at((int(x + dx), int(y + dy))) != (255, 255, 255, 255):
-                    return False
+                # Verifica se as coordenadas estão dentro dos limites da máscara
+                if 0 <= x + dx < self.mask.get_width() and 0 <= y + dy < self.mask.get_height():
+                    if self.mask.get_at((int(x + dx), int(y + dy))) != (255, 255, 255, 255):
+                        return False
         return True
+
 
     def check_bounds(self, screen_width, screen_height):
         # Verifica os limites da tela

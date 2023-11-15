@@ -13,6 +13,14 @@ background_image_filename = './bg-mar.jpeg'
 mask_background = './bg-mar-overlay.png'
 
 pygame.init()
+pygame.mixer.init()
+
+#SONS
+som_barco = pygame.mixer.Sound('sombarco.mp3')
+pygame.mixer.music.load('space.mp3')
+pygame.mixer.music.set_volume(0.1)
+pygame.mixer.music.play(-1)
+
 
 screen = pygame.display.set_mode((800, 800), 0, 32)
 initial_background = pygame.image.load(bg_tela_inicial).convert()
@@ -51,7 +59,7 @@ clock = pygame.time.Clock()
 TIMEREVENT = pygame.USEREVENT + 1
 pygame.time.set_timer(TIMEREVENT, 1000) 
 
-game_time = 35  
+game_time = 55  
 original_game_time = game_time
 
 button_width = 200
@@ -63,6 +71,13 @@ help_button_rect = pygame.Rect((screen_width - 100) // 2, margin, 100, 30)
 
 show_initial_screen = True
 game_over = False
+
+font = pygame.font.Font(None, 36)
+score = 0
+menu_button_rect = pygame.Rect((screen_width - button_width) // 2, screen_height // 2 + 90, button_width, button_height)
+instructions_button_rect = pygame.Rect((screen_width - button_width) // 2, screen_height // 2 + 160, button_width, button_height)
+sound_button_rect = pygame.Rect((screen_width - button_width) // 2, screen_height // 2 + 230, button_width, button_height)
+sound_on = True
 
 while show_initial_screen:
     for event in pygame.event.get():
@@ -79,15 +94,37 @@ while show_initial_screen:
                 pygame.quit()
                 exit()
 
+            elif menu_button_rect.collidepoint(mouse_x, mouse_y):
+                # Adicione código para mostrar o menu
+                pass
+
+            elif instructions_button_rect.collidepoint(mouse_x, mouse_y):
+                # Adicione código para mostrar instruções
+                pass
+
+            elif sound_button_rect.collidepoint(mouse_x, mouse_y):
+                # Adicione código para ligar/desligar som
+                sound_on = not sound_on
+
     screen.blit(initial_background, (0, 0))
 
     pygame.draw.rect(screen, (200, 200, 200, 128), play_button_rect)
+    pygame.draw.rect(screen, (200, 200, 200, 128), instructions_button_rect)
+    pygame.draw.rect(screen, (200, 200, 200, 128), sound_button_rect)
     pygame.draw.rect(screen, (200, 200, 200, 128), exit_button_rect)
 
     font = pygame.font.Font(None, 36)
     play_text = font.render('PLAY', True, (255, 255, 255))
     play_text_rect = play_text.get_rect(center=play_button_rect.center)
     screen.blit(play_text, play_text_rect)
+
+    instructions_text = font.render('Instruções', True, (255, 255, 255))
+    instructions_text_rect = instructions_text.get_rect(center=instructions_button_rect.center)
+    screen.blit(instructions_text, instructions_text_rect)
+
+    sound_text = font.render('Som: ' + ('Ligado' if sound_on else 'Desligado'), True, (255, 255, 255))
+    sound_text_rect = sound_text.get_rect(center=sound_button_rect.center)
+    screen.blit(sound_text, sound_text_rect)
 
     exit_text = font.render('EXIT', True, (255, 255, 255))
     exit_text_rect = exit_text.get_rect(center=exit_button_rect.center)
@@ -98,12 +135,13 @@ while show_initial_screen:
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
+            pygame.mixer.music.stop()
             pygame.quit()
             exit()
         elif event.type == TIMEREVENT and not show_initial_screen and not game_over:
             game_time -= 1 
             if game_time <= 0: 
-                show_initial_screen = True 
+                show_initial_screen = True
                 game_over = True
         elif event.type == MOUSEBUTTONDOWN:
             mouse_x, mouse_y = event.pos
@@ -113,6 +151,16 @@ while True:
                 helper.visible = True
                 help_button_clicked = True
 
+
+        elif event.type == MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = event.pos
+
+            if sound_button_rect.collidepoint(mouse_x, mouse_y):
+                sound_on = not sound_on
+                if sound_on:
+                    pygame.mixer.music.set_volume(0.1)
+                else:
+                    pygame.mixer.music.set_volume(0.0)
 
     keys = pygame.key.get_pressed()
     boat.move(keys, clock.get_time() / 1000.0)
@@ -128,13 +176,17 @@ while True:
         doll.draw(screen)
         if doll.check_collision(boat, helper):
             game_time += 0
-            
+            som_barco.play()
+            score += 10
             
     helper.draw(screen)
 
     dolls_left = sum(not doll.saved for doll in dolls)
     dolls_text = font.render('Resgatar: ' + str(dolls_left), True, (255, 255, 255))
     screen.blit(dolls_text, (10, 50)) 
+
+    score_text = font.render('Pontuação: ' + str(score), True, (255, 255, 255))
+    screen.blit(score_text, (10, 70))
 
     font = pygame.font.Font(None, 36)
     time_text = font.render('Time: ' + str(game_time), True, (255, 255, 255))
@@ -180,21 +232,24 @@ while True:
 
                         elif exit_button_rect.collidepoint(mouse_x, mouse_y):
                             pygame.quit()
-                            exit()
-
-                screen.fill((255, 255, 255))
+                            exit()        
 
                 font = pygame.font.Font(None, 72)
+
+                pygame.draw.rect(screen, (200, 200, 200, 128), play_button_rect)
+                pygame.draw.rect(screen, (200, 200, 200, 128), exit_button_rect)
+
+
                 game_over_text = font.render('Game Over', True, (255, 0, 0))
                 game_over_rect = game_over_text.get_rect(center=(screen_width // 2, screen_height // 4))
                 screen.blit(game_over_text, game_over_rect)
 
                 restart_text = font.render('Restart', True, (0, 0, 0))
-                restart_rect = restart_text.get_rect(center=(screen_width // 2, screen_height // 2))
+                restart_rect = restart_text.get_rect(center=play_button_rect.center)
                 screen.blit(restart_text, restart_rect)
 
                 exit_text = font.render('Exit', True, (0, 0, 0))
-                exit_rect = exit_text.get_rect(center=(screen_width // 2, screen_height // 2 + 100))
+                exit_rect = exit_text.get_rect(center=exit_button_rect.center)
                 screen.blit(exit_text, exit_rect)
 
                 pygame.display.update()

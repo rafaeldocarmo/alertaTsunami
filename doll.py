@@ -1,23 +1,26 @@
 import pygame
 from pygame.locals import *
 from gameobjects.Vector2 import Vector2
-
-class Doll:
+class Doll(pygame.sprite.Sprite):
     def __init__(self, image_filename, position):
+        super().__init__()
         self.image = pygame.image.load(image_filename)
         self.image = pygame.transform.scale(self.image, (30, 30))
-        self.position = Vector2(*position)
+        self.rect = self.image.get_rect()
+        self.rect.topleft = position
         self.saved = False
 
     def draw(self, screen):
         if not self.saved:
-            screen.blit(self.image, (self.position.x, self.position.y))
+            screen.blit(self.image, self.rect)
 
-    def check_collision(self, boat):
-      if not self.saved:
-         boat_rect = pygame.Rect(boat.position.x, boat.position.y, boat.image.get_width(), boat.image.get_height())
-         doll_rect = pygame.Rect(self.position.x, self.position.y, self.image.get_width(), self.image.get_height())
-         if boat_rect.colliderect(doll_rect):
-               self.saved = True
-               return True
-      return False
+    def check_collision(self, boat, helper=None):
+        if pygame.sprite.collide_rect(self, boat) and not self.saved:
+            self.saved = True
+            return True
+        elif helper and pygame.sprite.collide_rect(self, helper) and not self.saved:
+            self.saved = True
+            helper.timer = 1
+            return True
+        return False
+

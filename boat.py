@@ -5,7 +5,7 @@ from gameobjects.Vector2 import Vector2
 class Boat(pygame.sprite.Sprite):
     def __init__(self, image_filename, initial_position, speed, mask):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load(image_filename), (53, 46))
+        self.image = pygame.transform.scale(pygame.image.load(image_filename), (40, 14))
         self.boatInicial = self.image
         self.rect = self.image.get_rect()
         self.rect.topleft = initial_position
